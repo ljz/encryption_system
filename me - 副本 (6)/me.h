@@ -26,6 +26,8 @@ public:
    CString AfxDesKey;
    CString Afx3DesKey;
    CString Afx3DesUnKey;
+   CString AfxAesUnKey;
+   CString AfxAesKey;
 
    CString AfxDesUnKey;
    CString AfxFanwen;

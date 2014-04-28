@@ -8,6 +8,7 @@
 #include "DecrypOptionDlg.h"
 #include <stdlib.h>
 #include "DES.h"
+#include "AES.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -274,11 +275,38 @@ void CmeDlg::OnBnClickedButtonEncrypOption()
   */
 void CmeDlg::OnBnClickedButtonEncryp()		
 {
+	//公共变量声明区域
 	CmeApp * mApp = (CmeApp*)AfxGetApp( );
+	CFileDialog miwen_dlg(FALSE);//密文选择dlg
+	CString miwenfileName;
+	FILE * pmiwenfile;//密文文件指针
+
+
+
+
 	char chDes_Key[9];
 	char ch3Des_Key[18];
+	//AES相关变量声明区域
+	unsigned char AesKey[16];/*/ =	  //Aes密钥
+	{
+		0x2b, 0x7e, 0x15, 0x16, 
+		0x28, 0xae, 0xd2, 0xa6, 
+		0xab, 0xf7, 0x15, 0x88, 
+		0x09, 0xcf, 0x4f, 0x3c
+	};						  /*/
+	char aesfiletemp[20000];
+	int aesfilelength;
+	int aesendflag=0;
+	char aestext[17];
+	FILE *AesFp;
+
+
+
+
+	//
 	memcpy(chDes_Key,mApp->AfxDesKey,9);
 	memcpy(ch3Des_Key,mApp->Afx3DesKey,18);
+	memcpy(AesKey,mApp->AfxAesKey,16);
 	CDES mydes;
 	switch (mApp->mMingwendlg)
 	{
@@ -300,6 +328,45 @@ void CmeDlg::OnBnClickedButtonEncryp()
 		break;
 	case 4:
 		AfxMessageBox(__T("选中AES加密算法"));//0000100
+		//*/
+		AesFp=fopen((LPSTR)(LPCSTR)mApp->AfxMingwenPath,"rb+");//打开明文文件  ，可以调到switch语句前面。
+		aesfilelength=ftell(AesFp);
+		fseek(AesFp,0,SEEK_SET);
+		fseek(AesFp,0,SEEK_END);
+		aesfilelength=ftell(AesFp);
+		rewind(AesFp);
+		fread(aesfiletemp,aesfilelength,1,AesFp);
+		for(;aesendflag+16<=aesfilelength;)
+		{
+
+			aestext[0]=aesfiletemp[aesendflag+0];		aestext[1]=aesfiletemp[aesendflag+1];		aestext[2]=aesfiletemp[aesendflag+2];		aestext[3]=aesfiletemp[aesendflag+3];
+			aestext[4]=aesfiletemp[aesendflag+4];		aestext[5]=aesfiletemp[aesendflag+5];		aestext[6]=aesfiletemp[aesendflag+6];		aestext[7]=aesfiletemp[aesendflag+7];	 
+			aestext[8]=aesfiletemp[aesendflag+8];		aestext[9]=aesfiletemp[aesendflag+9];		aestext[10]=aesfiletemp[aesendflag+10];	aestext[11]=aesfiletemp[aesendflag+11];
+			aestext[12]=aesfiletemp[aesendflag+12];	aestext[13]=aesfiletemp[aesendflag+13];	aestext[14]=aesfiletemp[aesendflag+14];	aestext[15]=aesfiletemp[aesendflag+15];
+				aestext[16]='\0';
+			//AfxMessageBox(aestext);
+			AES myaes(AesKey);
+			myaes.Cipher(aestext,16);
+			aesfiletemp[aesendflag+0] = aestext[0];	aesfiletemp[aesendflag+1]=aestext[1];		aesfiletemp[aesendflag+2]=aestext[2];		aesfiletemp[aesendflag+3]=aestext[3];
+			aesfiletemp[aesendflag+4]=aestext[4];		aesfiletemp[aesendflag+5]=aestext[5];		aesfiletemp[aesendflag+6]=aestext[6];		aesfiletemp[aesendflag+7]=aestext[7];	 
+			aesfiletemp[aesendflag+8]=aestext[8];		aesfiletemp[aesendflag+9]=aestext[9];		aesfiletemp[aesendflag+10]=aestext[10];	aesfiletemp[aesendflag+11]=aestext[11];
+			aesfiletemp[aesendflag+12]=aestext[12];	aesfiletemp[aesendflag+13]=aestext[13];	aesfiletemp[aesendflag+14]=aestext[14];	aesfiletemp[aesendflag+15]=aestext[15];
+			aesendflag+=16;
+		}
+		fclose(AesFp);
+
+		if (miwen_dlg.DoModal() == IDOK)
+		{
+		miwenfileName = miwen_dlg.GetPathName();
+		}
+		
+		pmiwenfile = fopen(miwenfileName,"wb+");
+		fwrite(aesfiletemp,aesfilelength,1,pmiwenfile);
+		fclose(pmiwenfile);
+		//加密完成
+
+		//*/
+
 		break;
 	case 5:
 		AfxMessageBox(__T("选中AES和DES加密算法"));/////0000101
@@ -500,6 +567,7 @@ void CmeDlg::OnBnClickedButtonEncryp()
 
 void CmeDlg::OnBnClickedButtonChoseCipherFile()
 {
+	strTemp = "";
 	char buf[1000];
 	int ret=1000;
 	CFileDialog miwen_dlg(TRUE);///TRUE为OPEN对话框，FALSE为SAVE AS对话框
@@ -548,25 +616,31 @@ void CmeDlg::OnBnClickedButtonChoseDncrypAlogrithm()
 
 void CmeDlg::OnBnClickedButtonDecryp()
 {
-	//CString strMingwenPath;
+	//公共变量声明
 	CmeApp * mApp = (CmeApp*)AfxGetApp( );
+	CFileDialog  mingwen_dlg(FALSE);
+	CString mingwenfileName;
+	 FILE * pmingwenfile;//明文file指针
+	
 
-	//CmeApp * mApp = (CmeApp*)AfxGetApp( );
-	//mApp->AfxMingwenPath = mingwen_dlg.GetPathName();
+	///////////一下是AES解密变量声明区域 。
 
-	//strMingwenPath.Format(__T("%d"),mApp->AfxMingwenPath);
-	//AfxMessageBox(__T("mApp->AfxMingwenPath"));
-	//AfxMessageBox(mApp->AfxMingwenPath);
-	//AfxMessageBox(__T("mApp->AfxDesKey"));
-	//AfxMessageBox(mApp->AfxDesKey);
-	//char *CharMingwenPath=(LPSTR)(LPCTSTR) strMingwenPath;
-	//FALSE为SAVE AS对话框
+	 unsigned char chAes_UnKey[16] =	 
+	{
+		0x2b, 0x7e, 0x15, 0x16, 
+		0x28, 0xae, 0xd2, 0xa6, 
+		0xab, 0xf7, 0x15, 0x88, 
+		0x09, 0xcf, 0x4f, 0x3c
+	};
 
-	//CmeApp * msApp = (CmeApp*)AfxGetApp( );
-	//msApp->AfxMiwenPath = miwen_dlg.GetFileTitle();  //密文存储路径
-	//miwen_dlg.m_ofn.lpstrTitle=__T("存储密文对话框");
-	//miwen_dlg.m_ofn.lpstrFilter=__T("Text Files(*.txt)\0*.txt\0Document Files(*.doc)\0*.doc\0\0");
-	//miwen_dlg.DoModal();
+	FILE *AesFp;
+	char aesfiletemp[20000];
+	int aesfilelength;
+	int aesendflag=0;
+	unsigned char aestext[16];
+	
+	 ////////////AES解密变量声明结束行 。
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	char chDes_UnKey[9];
 	char ch3Des_UnKey[27];
@@ -574,6 +648,10 @@ void CmeDlg::OnBnClickedButtonDecryp()
 	//chDes_Key =(LPSTR)(LPCSTR)mApp->AfxDesKey; //	密钥
 	memcpy(chDes_UnKey,mApp->AfxDesUnKey,mApp->AfxDesUnKey.GetLength());
 	memcpy(ch3Des_UnKey,mApp->Afx3DesUnKey,mApp->Afx3DesUnKey.GetLength());
+	memcpy(chAes_UnKey,mApp->AfxAesUnKey,mApp->AfxAesUnKey.GetLength());//获得了AESUNKEY的值。
+	AES myaes(chAes_UnKey);
+
+
 	CDES myundes;
 	switch (mApp->mMiwendlg)
 	{
@@ -593,8 +671,40 @@ void CmeDlg::OnBnClickedButtonDecryp()
 		AfxMessageBox(__T("选中DES加密算法和3DES算法"));//000011
 		break;
 	case 4:
-		AfxMessageBox(__T("选中AES加密算法"));//0000100
+		AfxMessageBox(__T("选中AES解密算法"));//0000100
+		AesFp=fopen((LPSTR)(LPCSTR)mApp->AfxMiwenPath,"rb+");//打开密文文件
+		fseek(AesFp,0,SEEK_SET);
+		fseek(AesFp,0,SEEK_END);
+		aesfilelength=ftell(AesFp);	//得到密文的长度
+		rewind(AesFp);
+		fread(aesfiletemp,aesfilelength,1,AesFp);//读取密文的内容到aesfiletemp临时变量中。
+		for(;aesendflag+16<=aesfilelength;)	 //如果结束标志没有达到文件的长度，那说明还没结束。
+		{
+
+		aestext[0]=aesfiletemp[aesendflag+0];		aestext[1]=aesfiletemp[aesendflag+1];		aestext[2]=aesfiletemp[aesendflag+2];		aestext[3]=aesfiletemp[aesendflag+3];
+		aestext[4]=aesfiletemp[aesendflag+4];		aestext[5]=aesfiletemp[aesendflag+5];		aestext[6]=aesfiletemp[aesendflag+6];		aestext[7]=aesfiletemp[aesendflag+7];	 
+		aestext[8]=aesfiletemp[aesendflag+8];		aestext[9]=aesfiletemp[aesendflag+9];		aestext[10]=aesfiletemp[aesendflag+10];	aestext[11]=aesfiletemp[aesendflag+11];
+		aestext[12]=aesfiletemp[aesendflag+12];	aestext[13]=aesfiletemp[aesendflag+13];	aestext[14]=aesfiletemp[aesendflag+14];	aestext[15]=aesfiletemp[aesendflag+15];
+		myaes.InvCipher(aestext);
+		aesfiletemp[aesendflag+0] = aestext[0];	aesfiletemp[aesendflag+1]=aestext[1];		aesfiletemp[aesendflag+2]=aestext[2];		aesfiletemp[aesendflag+3]=aestext[3];
+		aesfiletemp[aesendflag+4]=aestext[4];		aesfiletemp[aesendflag+5]=aestext[5];		aesfiletemp[aesendflag+6]=aestext[6];		aesfiletemp[aesendflag+7]=aestext[7];	 
+		aesfiletemp[aesendflag+8]=aestext[8];		aesfiletemp[aesendflag+9]=aestext[9];		aesfiletemp[aesendflag+10]=aestext[10];	aesfiletemp[aesendflag+11]=aestext[11];
+		aesfiletemp[aesendflag+12]=aestext[12];	aesfiletemp[aesendflag+13]=aestext[13];	aesfiletemp[aesendflag+14]=aestext[14];	aesfiletemp[aesendflag+15]=aestext[15];
+		aesendflag+=16;
+		}
+		fclose(AesFp);//关闭密文文件
+
+		if (mingwen_dlg.DoModal() == IDOK)
+		{
+		 mingwenfileName = mingwen_dlg.GetPathName();
+		}
+		//FILE * aespmingwenfile;
+		pmingwenfile = fopen(mingwenfileName,"wb+");
+		fwrite(aesfiletemp,aesfilelength,1,pmingwenfile);
+		fclose(pmingwenfile);
+		//解密完成
 		break;
+
 	case 5:
 		AfxMessageBox(__T("选中AES和DES加密算法"));/////0000101
 		break;

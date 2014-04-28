@@ -22,7 +22,8 @@ public:
 	afx_msg void OnBnClickedButtonChoseFinish();
 	//CString mDesUnKey;
 	CString m3DesUnKey;
-	CString mAesUnKey;
+	//CString mAesUnKey;
 	int CheckState;
 	CString mDesUnKey;
+	CString mAesUnKey;
 };

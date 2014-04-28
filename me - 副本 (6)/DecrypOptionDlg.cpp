@@ -13,6 +13,7 @@ IMPLEMENT_DYNAMIC(DecrypOptionDlg, CDialog)
 DecrypOptionDlg::DecrypOptionDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(DecrypOptionDlg::IDD, pParent)
 	, mDesUnKey(_T(""))
+	, mAesUnKey(_T(""))
 {
 
 }
@@ -24,8 +25,9 @@ DecrypOptionDlg::~DecrypOptionDlg()
 void DecrypOptionDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT_DES_KEY, mDesUnKey);
-}
+	DDX_Text(pDX, IDC_EDIT_UNDES_KEY, mDesUnKey);
+	DDX_Text(pDX, IDC_EDIT_AES_UNKEY, mAesUnKey);
+}  
 
 
 BEGIN_MESSAGE_MAP(DecrypOptionDlg, CDialog)
@@ -60,6 +62,7 @@ void DecrypOptionDlg::OnBnClickedButtonChoseFinish()
 	mApp->mMiwendlg = CheckState;  //解密的选择项数
 	mApp->AfxDesUnKey = mDesUnKey;	//将DES解密密钥赋值给一个全局变量存储。
 	mApp->Afx3DesUnKey = m3DesUnKey;	//将3DES解密密钥赋值给一个全局变量存储。
+	mApp->AfxAesUnKey = mAesUnKey;
 	//MessageBox(mApp->mMiwendlg);
 	//AfxMessageBox(mApp->AfxDesUnKey);
 	EndDialog(0);  

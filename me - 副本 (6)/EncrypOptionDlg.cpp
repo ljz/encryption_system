@@ -65,6 +65,7 @@ void CEncrypOptionDlg::OnBnClickedButtonChoseFinish()
 	mApp->mMingwendlg = CheckState;
 	mApp->AfxDesKey = mDesKey;	//将DES密钥赋值给一个全局变量存储。
 	mApp->Afx3DesKey = m3DesKey;	//将3DES密钥赋值给一个全局变量存储。
+	mApp->AfxAesKey = mAesKey;
 	EndDialog(0);  
 	// TODO: 在此添加控件通知处理程序代码
 }
