@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "me.h"
 #include "DecrypOptionDlg.h"
+#include "RSAKeyPairDLG.h"
+
 
 
 // DecrypOptionDlg 对话框
@@ -32,6 +34,7 @@ void DecrypOptionDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(DecrypOptionDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_CHOSE_FINISH, &DecrypOptionDlg::OnBnClickedButtonChoseFinish)
+	ON_BN_CLICKED(IDC_BUTTON_CREATE_KEYS, &DecrypOptionDlg::OnBnClickedButtonCreateKeys)
 END_MESSAGE_MAP()
 
 
@@ -66,5 +69,24 @@ void DecrypOptionDlg::OnBnClickedButtonChoseFinish()
 	//MessageBox(mApp->mMiwendlg);
 	//AfxMessageBox(mApp->AfxDesUnKey);
 	EndDialog(0);  
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+//生成密钥RSA对
+void DecrypOptionDlg::OnBnClickedButtonCreateKeys()
+{
+	CString	m_strPublicKey;
+	CString	m_strPrivateKey;
+	CString	m_strR;
+ MessageBox(_T("sadgsdg"));
+CRSAKeyPairDLG *CRsaKeyPairDlg=new CRSAKeyPairDLG;
+CRsaKeyPairDlg->DoModal();
+
+
+
+
+
+
 	// TODO: 在此添加控件通知处理程序代码
 }

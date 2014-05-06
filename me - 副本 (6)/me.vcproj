@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RSAKeyPairDLG.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -257,6 +261,10 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RSAKeyPairDLG.h"
 				>
 			</File>
 			<File

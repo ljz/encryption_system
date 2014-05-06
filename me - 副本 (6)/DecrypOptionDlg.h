@@ -26,4 +26,5 @@ public:
 	int CheckState;
 	CString mDesUnKey;
 	CString mAesUnKey;
+	afx_msg void OnBnClickedButtonCreateKeys();
 };

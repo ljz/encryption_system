@@ -25,5 +25,6 @@ public:
 	CString m3DesKey;
 	CString mAesKey;
 	int CheckState;
+	afx_msg void OnBnClickedButtonCreateKeys();
 };
 

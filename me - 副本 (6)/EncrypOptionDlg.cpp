@@ -35,6 +35,7 @@ void CEncrypOptionDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CEncrypOptionDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_CHOSE_FINISH, &CEncrypOptionDlg::OnBnClickedButtonChoseFinish)
+	ON_BN_CLICKED(IDC_BUTTON_CREATE_KEYS, &CEncrypOptionDlg::OnBnClickedButtonCreateKeys)
 END_MESSAGE_MAP()
 
 
@@ -68,4 +69,10 @@ void CEncrypOptionDlg::OnBnClickedButtonChoseFinish()
 	mApp->AfxAesKey = mAesKey;
 	EndDialog(0);  
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CEncrypOptionDlg::OnBnClickedButtonCreateKeys()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
 }

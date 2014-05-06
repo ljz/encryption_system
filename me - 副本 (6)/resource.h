@@ -9,6 +9,7 @@
 #define IDR_MAINFRAME                   128
 #define IDD_DIALOG_ENCRYP_CHOSE         129
 #define IDD_DIALOG_DECRYP_CHOSE         130
+#define IDD_RSA_KEY_DLG                 131
 #define IDC_BUTTON_CHOSE_PLAIN_FILE     1000
 #define IDC_EDIT_MINGWEN                1001
 #define IDC_BUTTON_ENCRYP               1002
@@ -33,14 +34,17 @@
 #define IDC_EDIT_3DES_UNKEY             1020
 #define IDC_EDIT_UNDES_KEY              1021
 #define IDC_EDIT_AES_UNKEY              1022
+#define IDC_EDIT1                       1023
+#define IDC_EDIT2                       1024
+#define IDC_BUTTON1                     1025
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1023
+#define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
