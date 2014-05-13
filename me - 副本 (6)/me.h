@@ -28,6 +28,8 @@ public:
    CString Afx3DesUnKey;
    CString AfxAesUnKey;
    CString AfxAesKey;
+   CString Afx_RSA_PK;
+   CString Afx_RSA_SK;
 
    CString AfxDesUnKey;
    CString AfxFanwen;

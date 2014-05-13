@@ -34,9 +34,9 @@
 #define IDC_EDIT_3DES_UNKEY             1020
 #define IDC_EDIT_UNDES_KEY              1021
 #define IDC_EDIT_AES_UNKEY              1022
-#define IDC_EDIT1                       1023
+#define IDC_PublicKey                   1023
 #define IDC_EDIT2                       1024
-#define IDC_BUTTON1                     1025
+#define IDC_PrivateKey                  1024
 
 // Next default values for new objects
 // 

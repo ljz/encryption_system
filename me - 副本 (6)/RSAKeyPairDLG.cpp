@@ -1,75 +1,32 @@
-// DecrypOptionDlg.cpp : 实现文件
+// RSAKeyPairDLG.cpp : 实现文件
 //
 
 #include "stdafx.h"
 #include "me.h"
-#include "DecrypOptionDlg.h"
 #include "RSAKeyPairDLG.h"
 
 
+// CRSAKeyPairDLG 对话框
 
-// DecrypOptionDlg 对话框
+IMPLEMENT_DYNAMIC(CRSAKeyPairDLG, CDialog)
 
-IMPLEMENT_DYNAMIC(DecrypOptionDlg, CDialog)
-
-DecrypOptionDlg::DecrypOptionDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(DecrypOptionDlg::IDD, pParent)
-	, mDesUnKey(_T(""))
-	, mAesUnKey(_T(""))
+CRSAKeyPairDLG::CRSAKeyPairDLG(CWnd* pParent /*=NULL*/)
+	: CDialog(CRSAKeyPairDLG::IDD, pParent)
+	, m_strPublicKey(_T(""))
+	, m_strPrivateKey(_T(""))
 {
-
+	//SKLENGTH = 4;       //私钥的长度
 }
 
-DecrypOptionDlg::~DecrypOptionDlg()
+CRSAKeyPairDLG::~CRSAKeyPairDLG()
 {
 }
 
-void DecrypOptionDlg::DoDataExchange(CDataExchange* pDX)
+void CRSAKeyPairDLG::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT_UNDES_KEY, mDesUnKey);
-	DDX_Text(pDX, IDC_EDIT_AES_UNKEY, mAesUnKey);
-}  
-
-
-BEGIN_MESSAGE_MAP(DecrypOptionDlg, CDialog)
-	ON_BN_CLICKED(IDC_BUTTON_CHOSE_FINISH, &DecrypOptionDlg::OnBnClickedButtonChoseFinish)
-	ON_BN_CLICKED(IDC_BUTTON_CREATE_KEYS, &DecrypOptionDlg::OnBnClickedButtonCreateKeys)
-END_MESSAGE_MAP()
-
-
-// DecrypOptionDlg 消息处理程序
-
-void DecrypOptionDlg::OnBnClickedButtonChoseFinish()
-{
-	CButton* pDesCheck = (CButton*)GetDlgItem(IDC_CHECK_DES);
-	int pDesCheckState = pDesCheck->GetCheck();
-	CButton* p3DesCheck = (CButton*)GetDlgItem(IDC_CHECK_3DES);
-	int p3DesCheckState = p3DesCheck->GetCheck();
-	p3DesCheckState = p3DesCheckState<<1;
-	CButton* pAesCheck = (CButton*)GetDlgItem(IDC_CHECK_AES);
-	int pAesCheckState = pAesCheck->GetCheck();
-	pAesCheckState = pAesCheckState<<2;
-	CButton* pRc5Check = (CButton*)GetDlgItem(IDC_CHECK_RC5);
-	int pRc5CheckState = pRc5Check->GetCheck();
-	pRc5CheckState = pRc5CheckState<<3;
-	CButton* pRsaCheck = (CButton*)GetDlgItem(IDC_CHECK_RSA);
-	int pRsaCheckState = pRsaCheck->GetCheck();
-	pRsaCheckState = pRsaCheckState<<4;
-	CButton* pMd5Check = (CButton*)GetDlgItem(IDC_CHECK_MD5);
-	int pMd5CheckState = pMd5Check->GetCheck();
-	pMd5CheckState = pMd5CheckState<<5;
-	CheckState = pDesCheckState + p3DesCheckState + pAesCheckState + pRc5CheckState + pRsaCheckState + pMd5CheckState ;    
-	CmeApp * mApp = (CmeApp*)AfxGetApp( );
-	UpdateData(true);//将edit中的内容传给变量
-	mApp->mMiwendlg = CheckState;  //解密的选择项数
-	mApp->AfxDesUnKey = mDesUnKey;	//将DES解密密钥赋值给一个全局变量存储。
-	mApp->Afx3DesUnKey = m3DesUnKey;	//将3DES解密密钥赋值给一个全局变量存储。
-	mApp->AfxAesUnKey = mAesUnKey;
-	//MessageBox(mApp->mMiwendlg);
-	//AfxMessageBox(mApp->AfxDesUnKey);
-	EndDialog(0);  
-	// TODO: 在此添加控件通知处理程序代码
+	DDX_Text(pDX, IDC_PublicKey, m_strPublicKey);
+	DDX_Text(pDX, IDC_PrivateKey, m_strPrivateKey);
 }
 
 /*---------------------------------------------------------------------------
@@ -77,114 +34,35 @@ void DecrypOptionDlg::OnBnClickedButtonChoseFinish()
 入口参数：大数A名
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::SetZero(byteint A)  //6
+/*
+void CRSAKeyPairDLG::SetZero(byteint A)  
 {
 	memset(A,0,DATALENGTH);                    //调用系统函数进行初始化
 }
-/*---------------------------------------------------------------------------
-功能：该函数用来从集合[1,b-1]中产生若干个用于检测的数，存放在Model[]中
-入口参数：无
-返回值：无
-----------------------------------------------------------------------------*/
-void DecrypOptionDlg::Mdata() 
-{
-	int i,j;                    //Randomly choose a set of 100 numbers in [1,b-1]
-	int k=MLENGTH-2; //MLENGTH是质数的长度
-
-	memset(Model,0,TESTNUM*MLENGTH);  //这个函数在这里用来将整个数组清零，进行初始化  11,TESTNUM是测试质数时的比较的次数
-	srand( (unsigned)time( NULL ) );  //进行随机函数的初始化   14
-	for(i=0;i<TESTNUM;i++)            //TESTNUM为需要产生的个数
-	{
-		for(j=MLENGTH-1;j>=k;j--)
-		{
-			Model[i][j]=rand()%10;    //注意这里与测试素数的程序中的区别，
-		}
-		if((memcmp(Model[i],mZEROVALUE,MLENGTH))==0) // 比较Model[i]和mZEROVALUE的第MLENGTH个字节的ascII码值
-			i--;
-		k--;                          //保证所产生的数不为0
-		if (k<0) k=MLENGTH-2;
-	}
-
-}
-/*---------------------------------------------------------------------------
-功能：随机地产生一个大数奇数，长度为num，最高位不是0，存放在RandomA中
-入口参数：大数A，长度num
-返回值：无
-----------------------------------------------------------------------------*/
-void DecrypOptionDlg::IntRandom(byteint RandomA,int num)//18
-{
-	int i;
-	SetZero(RandomA);                     //将RandomA清零
-
-	while(!(RandomA[DATALENGTH-1]%2))     //判断条件保证RandomA的最后一位数是奇数
-		RandomA[DATALENGTH-1]=rand()%10;  //如果最后一位是偶数，则从新产生最后一位
-	while(!(RandomA[DATALENGTH-num]))     //判断条件保证RandomA最高位不是0
-		RandomA[DATALENGTH-num]=rand()%10;//如果最高位是0,则从新产生最高位
-
-	i=DATALENGTH-2;
-	while(i>=DATALENGTH-num+1)            //循环产生从次低位开始到次高位的所有位上的数
-		RandomA[i--]=rand()%10;
-}
-
-/*---------------------------------------------------------------------------
-功能：将大数B拷贝到大数A中
-入口参数：大数A，大数B
-返回值：无
-----------------------------------------------------------------------------*/
-void DecrypOptionDlg::IntCpy(byteint A,byteint B) //20
-{
-	memcpy(A,B,DATALENGTH);                    //调用系统函数完成拷贝
-}
-
-/*---------------------------------------------------------------------------
-功能：大数SA减去大数SB，结果放入SC
-入口参数：被减数SA，减数SB，差SC
-返回值：无
-----------------------------------------------------------------------------*/
-void DecrypOptionDlg::Substract(byteint SA,byteint SB,byteint SC)
-{
-	byteint buf;
-	int i,j;
-	int X;
-	IntCpy(buf,SA);                  //将SA的内容拷贝到buf中
-	SetZero(SC);                 //SC清零初始化
-	for(i=DATALENGTH-1;i>=0;i--)	
-	{
-		if(buf[i]<SB[i])             //如果最低位不够减
-		{
-			buf[i]=buf[i]+10;        //向高位借1
-			if(buf[i-1]>0)           //如果高位够减，直接减1
-				(buf[i-1])--;    
-			else                     //否则一直找到够减的位
-			{
-				j=i-1;
-				while(buf[j]==0)     //j不会出现越界，是因为保证了最高位不为0
-					buf[j--]=9;
-				buf[j]=buf[j]-1;
-			}
-		}
-		X=buf[i]-SB[i];              //将各位减的结果存入SC中
-		SC[i]=X;
-	}
-}
+*/
 /*---------------------------------------------------------------------------
 功能：得到一个大数的非零位数
 入口参数：大数validtemp
 返回值：大数中非零的位数
 ----------------------------------------------------------------------------*/
-int DecrypOptionDlg::IntValid(byteint validtemp)
+/*
+int CRSAKeyPairDLG::IntValid(byteint validtemp)
 {
 	int i=0;
 	while(validtemp[i]==0 && i<DATALENGTH)
 		i++;
 	return DATALENGTH-i;
 }
+*/
+
+
 /*---------------------------------------------------------------------------
 功能：比较两个大数A和B的大小
 入口参数：大数A和大数B
 返回值：A>B:return 1 ; A=B:return 0 ; A<B:return -1
 ----------------------------------------------------------------------------*/
-int DecrypOptionDlg::IntCmp(byteint A,byteint B)
+/*
+int CRSAKeyPairDLG::IntCmp(byteint A,byteint B)
 {
 	int stat;
 	stat=memcmp(A,B,DATALENGTH);    //系统函数
@@ -195,12 +73,15 @@ int DecrypOptionDlg::IntCmp(byteint A,byteint B)
 	return -1;
 }
 
+*/
+
 /*---------------------------------------------------------------------------
 功能：计算大数A÷B的结果，余数放在C中，商在D中
 入口参数：被除数A，除数B，余数C，商D
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::SetMode(byteint A,byteint B,byteint C,byteint D)
+/*
+void CRSAKeyPairDLG::SetMode(byteint A,byteint B,byteint C,byteint D)
 {
 	int i,j,k;
 	int valid_1,valid_2,valid,sbits,cmpval;
@@ -255,13 +136,14 @@ void DecrypOptionDlg::SetMode(byteint A,byteint B,byteint C,byteint D)
 	}
 }
 
+*/
 
 /*---------------------------------------------------------------------------
 功能：该函数用来将十进制的大整数转换成二进制的数
 入口参数：需转换的大数B，二进制结果flag[400]
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::TransBi(byteint B,signed char flag[400])
+/*void CRSAKeyPairDLG::TransBi(byteint B,signed char flag[400])
 {
 	byteint buf;
 	byteint result;
@@ -281,13 +163,15 @@ void DecrypOptionDlg::TransBi(byteint B,signed char flag[400])
 	}
 	flag[i]=-1;                             //设置一个标志位，表明二进制数的开始
 }
+*/
+
 /*---------------------------------------------------------------------------
 功能：将质数类型B拷贝到A中，实现类型转换
 入口参数：大数A，质数类型B
 返回值：无
 ----------------------------------------------------------------------------*/
 //功能：将数B拷贝到大数A，实现类型转换
-void DecrypOptionDlg::LoadInt(byteint A,mtype B)
+/*void CRSAKeyPairDLG::LoadInt(byteint A,mtype B)
 {
 	int i,j;
 	SetZero(A);                  //A进行清零初始化
@@ -298,13 +182,14 @@ void DecrypOptionDlg::LoadInt(byteint A,mtype B)
 		A[i--]=B[j--];
 	}
 }
-
+*/
 /*---------------------------------------------------------------------------
 功能：大数A与大数B相乘，结果放入C中 A×B->C
 入口参数：被乘数A和乘数B，结果C
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::Multiply(byteint A,byteint B,byteint C)
+/*
+void CRSAKeyPairDLG::Multiply(byteint A,byteint B,byteint C)
 {
 	int i,j,w;
 	int X,Y,Z;
@@ -330,12 +215,15 @@ void DecrypOptionDlg::Multiply(byteint A,byteint B,byteint C)
 		}
 		return;
 }
+*/
+
 /*---------------------------------------------------------------------------
 功能：该函数用来进行模幂算法，A为底数，模为c，二进制的指数B存放在数组flag中
 入口参数：底数A，模C，结果D，二进制质数flag[400]
 返回值：A^B=1(mod C),返回1；A^B=p-1(mod C),返回2；否则返回0
 ----------------------------------------------------------------------------*/
-int DecrypOptionDlg::PowerMode(byteint A,byteint C,byteint D,signed char flag[400])
+/*
+int CRSAKeyPairDLG::PowerMode(byteint A,byteint C,byteint D,signed char flag[400])
 {
 	byteint buf;
 	byteint result;
@@ -369,12 +257,111 @@ int DecrypOptionDlg::PowerMode(byteint A,byteint C,byteint D,signed char flag[40
 		return 2;
 	return 0;
 }
+*/
+
+/*---------------------------------------------------------------------------
+功能：随机地产生一个大数奇数，长度为num，最高位不是0，存放在RandomA中
+入口参数：大数A，长度num
+返回值：无
+----------------------------------------------------------------------------*/
+/*
+void CRSAKeyPairDLG::IntRandom(byteint RandomA,int num)
+{
+	int i;
+	SetZero(RandomA);                     //将RandomA清零
+
+	while(!(RandomA[DATALENGTH-1]%2))     //判断条件保证RandomA的最后一位数是奇数
+		RandomA[DATALENGTH-1]=rand()%10;  //如果最后一位是偶数，则从新产生最后一位
+	while(!(RandomA[DATALENGTH-num]))     //判断条件保证RandomA最高位不是0
+		RandomA[DATALENGTH-num]=rand()%10;//如果最高位是0,则从新产生最高位
+
+	i=DATALENGTH-2;
+	while(i>=DATALENGTH-num+1)            //循环产生从次低位开始到次高位的所有位上的数
+		RandomA[i--]=rand()%10;
+}
+*/
+
+/*---------------------------------------------------------------------------
+功能：将大数B拷贝到大数A中
+入口参数：大数A，大数B
+返回值：无
+----------------------------------------------------------------------------*/
+/*
+void CRSAKeyPairDLG::IntCpy(byteint A,byteint B)
+{
+	memcpy(A,B,DATALENGTH);                    //调用系统函数完成拷贝
+}
+*/
+
+/*---------------------------------------------------------------------------
+功能：大数SA减去大数SB，结果放入SC
+入口参数：被减数SA，减数SB，差SC
+返回值：无
+----------------------------------------------------------------------------*/
+/*
+void CRSAKeyPairDLG::Substract(byteint SA,byteint SB,byteint SC)
+{
+	byteint buf;
+	int i,j;
+	int X;
+	IntCpy(buf,SA);                  //将SA的内容拷贝到buf中
+	SetZero(SC);                 //SC清零初始化
+	for(i=DATALENGTH-1;i>=0;i--)	
+	{
+		if(buf[i]<SB[i])             //如果最低位不够减
+		{
+			buf[i]=buf[i]+10;        //向高位借1
+			if(buf[i-1]>0)           //如果高位够减，直接减1
+				(buf[i-1])--;    
+			else                     //否则一直找到够减的位
+			{
+				j=i-1;
+				while(buf[j]==0)     //j不会出现越界，是因为保证了最高位不为0
+					buf[j--]=9;
+				buf[j]=buf[j]-1;
+			}
+		}
+		X=buf[i]-SB[i];              //将各位减的结果存入SC中
+		SC[i]=X;
+	}
+}
+*/
+
+
+/*---------------------------------------------------------------------------
+功能：该函数用来从集合[1,b-1]中产生若干个用于检测的数，存放在Model[]中
+入口参数：无
+返回值：无
+----------------------------------------------------------------------------*/
+/*
+void CRSAKeyPairDLG::Mdata()
+{
+	int i,j;                     //Randomly choose a set of 100 numbers in [1,b-1]
+	int k=MLENGTH-2;
+
+	memset(Model,0,TESTNUM*MLENGTH);  //这个函数在这里用来将整个数组清零，进行初始化
+	srand( (unsigned)time( NULL ) );  //进行随机函数的初始化
+	for(i=0;i<TESTNUM;i++)            //TESTNUM为需要产生的个数
+	{
+		for(j=MLENGTH-1;j>=k;j--)
+		{
+			Model[i][j]=rand()%10;    //注意这里与测试素数的程序中的区别，
+		}
+		if((memcmp(Model[i],mZEROVALUE,MLENGTH))==0)  
+			i--;
+		k--;                          //保证所产生的数不为0
+		if (k<0) k=MLENGTH-2;
+	}
+
+}
+*/
 /*---------------------------------------------------------------------------
 功能：产生一个质数
 入口参数：大数Prm
 返回值：产生成功，返回0
 ----------------------------------------------------------------------------*/
-int DecrypOptionDlg::Prime(byteint Prm)    //17
+/*
+int CRSAKeyPairDLG::Prime(byteint Prm)
 {
 	int i,k,ok;
 	signed char flag[400];
@@ -387,15 +374,15 @@ int DecrypOptionDlg::Prime(byteint Prm)    //17
 		srand( (unsigned)time( NULL ) );     //初始化srand
 		IntRandom(B,MLENGTH);                //随机产生一个大数B  try b if prime,B是一个奇数
 
-		IntCpy(Prm,B);                       //将B拷贝到prm中   C=N result prime  19
-		Substract(B,ONEVALUE,buf1);          //将B-ONEVALUE的结果放到buf1中 21
-		SetMode(buf1,TWOVALUE,buf2,B);       //B=(B-1)/2的商,buf2=(B-1)/2的余数=0  21    计算大数A÷B的结果，余数放在C中，商在D中
-		TransBi(B,flag);                     //将B转换为二进制大数  22
+		IntCpy(Prm,B);                       //将B拷贝到prm中 C=N result prime
+		Substract(B,ONEVALUE,buf1);          //将B-ONEVALUE的结果放到buf1中
+		SetMode(buf1,TWOVALUE,buf2,B);       //B=(B-1)/2的商,buf2=(B-1)/2的余数=0
+		TransBi(B,flag);                     //将B转换为二进制大数
 		ok=1;
 		for(i=0;i<TESTNUM;i++)
 		{
-			LoadInt(A,Model[i]);             //将数组Model中的第i+1个数读取到A中  23
-			k=PowerMode(A,Prm,D,flag);       //(A^flag) mod Prm ->D  24
+			LoadInt(A,Model[i]);             //将数组Model中的第i+1个数读取到A中
+			k=PowerMode(A,Prm,D,flag);       //(A^flag) mod Prm ->D
 			if(k!=1 && k!=2)                 //不符合判定规则
 			{
 				ok=0;
@@ -415,22 +402,27 @@ int DecrypOptionDlg::Prime(byteint Prm)    //17
 		}//for循环用来检测IntRandom(B,MLENGTH)产生的数B是否是一个素数	
 	}
 }
+*/
 
 /*---------------------------------------------------------------------------
 功能：计算模R
 入口参数：产生的质数p，q，模R
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::ComputingR(byteint p,byteint q,byteint R)
+/*
+void CRSAKeyPairDLG::ComputingR(byteint p,byteint q,byteint R)
 {
 	Multiply(p,q,R);              // R=p*q, public mode number
 }
+*/
+
 /*---------------------------------------------------------------------------
 功能：计算$(r)
 入口参数：质数p，质数q，模$(r)放在Rvalue
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::ComputingRvalue(byteint p,byteint q,byteint Rvalue)
+/*
+void CRSAKeyPairDLG::ComputingRvalue(byteint p,byteint q,byteint Rvalue)
 {
 	byteint buf1,buf2;
 	SetZero(buf1); SetZero(buf2);
@@ -439,12 +431,15 @@ void DecrypOptionDlg::ComputingRvalue(byteint p,byteint q,byteint Rvalue)
 	Substract(q,ONEVALUE,buf2);   // buf2=q-1
 	Multiply(buf1,buf2,Rvalue);   // Rvalue=(p-1)*(q-1)
 }
+*/
+
 /*---------------------------------------------------------------------------
 功能：A＋B的结果送C
 入口参数：大数A,B,C
 返回值：无
 ----------------------------------------------------------------------------*/
-void DecrypOptionDlg::Plus(byteint A,byteint B,byteint C)
+/*
+void CRSAKeyPairDLG::Plus(byteint A,byteint B,byteint C)
 {
 	int i;//,w;
 	int X,Y,Z,m,n,valid;
@@ -462,15 +457,19 @@ void DecrypOptionDlg::Plus(byteint A,byteint B,byteint C)
 		C[i-1]=C[i-1]+Y;
 	}
 }
+*/
 
 /*---------------------------------------------------------------------------
 功能：计算公钥PK
 入口参数：$(r)的值在Rvalue中，私钥SK，公钥PK
 返回值：成功找到，返回1
 ----------------------------------------------------------------------------*/
-int DecrypOptionDlg::ComputingPK(byteint Rvalue,byteint SK,byteint PK)
+/*
+int CRSAKeyPairDLG::ComputingPK(byteint Rvalue,byteint SK,byteint PK)
 {
 	int i;
+	SKLENGTH=4;       //私钥的长度
+
 	byteint PA,PB,PC,buf1,temp,buf2;
 	SetZero(PK); SetZero(PA); SetZero(PB); SetZero(PC); SetZero(buf1);   //清零初始化
 	SetZero(temp); SetZero(buf2);
@@ -515,38 +514,36 @@ int DecrypOptionDlg::ComputingPK(byteint Rvalue,byteint SK,byteint PK)
 	}
 	return 1;                   //SK and PK found
 }
+*/
 
-//生成密钥RSA对
-void DecrypOptionDlg::OnBnClickedButtonCreateKeys()
+/*---------------------------------------------------------------------------
+功能：将一个大数A转换为相应的字符串形式
+入口参数：大数A
+返回值：相对应的字符串
+----------------------------------------------------------------------------*/
+/*
+CString CRSAKeyPairDLG::PrtInt(byteint A)
 {
-
-	byteint m_p,m_q,m_R,m_Rvalue,m_PK,m_SK;//声明需要的几个变量
-	SetZero(m_p);      //对大数变量进行清零初始化 5
-	SetZero(m_q);
-	SetZero(m_R);
-	SetZero(m_Rvalue);
-	SetZero(m_PK);
-	SetZero(m_SK);
-	Mdata();         //生成比较数表
-	AfxMessageBox("开始计算质数P...");
-	Prime(m_p); 
-	AfxMessageBox("开始计算质数Q...");
-	Prime(m_q);
-
-	AfxMessageBox("开始计算模R...");
-	ComputingR(m_p,m_q,m_R); //计算模R
-	AfxMessageBox("开始计算模r");
-	ComputingRvalue(m_p,m_q,m_Rvalue);  //计算r
-	AfxMessageBox("开始计算秘钥SK,PK");
-	ComputingPK(m_Rvalue,m_PK,m_SK);    // Generate PK and SK
-	
-
-	CRSAKeyPairDLG *CRsaKeyPairDlg=new CRSAKeyPairDLG;
-	CRsaKeyPairDlg->DoModal();
-	memcpy(&(CRsaKeyPairDlg->m_strPublicKey),m_PK,DATALENGTH);
-	memcpy(&(CRsaKeyPairDlg->m_strPrivateKey),m_SK,DATALENGTH);
-	//CRsaKeyPairDlg->m_strPublicKey =  m_PK;
-	//CRsaKeyPairDlg->m_strPrivateKey = m_SK;
-	UpdateData(FALSE);
-	// TODO: 在此添加控件通知处理程序代码
+	int int i=0;
+	int m,n;
+	while(i<DATALENGTH && A[i]==0)          //跳过大数开始的空白0
+		i++;
+	if(i<DATALENGTH)
+		m=DATALENGTH-i;                     //求出有用的大数长度
+	n=0;
+	//注意到这里的i已经是数组中第一个非零元素的对应位置，
+	CString str="";							//因此下面的循环就是从数组中
+	//存放的数的最高位开始输出。
+	while(i<DATALENGTH)
+	{
+		str += (A[i++]+'0');
+	}
+	return str;
 }
+*/
+
+BEGIN_MESSAGE_MAP(CRSAKeyPairDLG, CDialog)
+END_MESSAGE_MAP()
+
+
+// CRSAKeyPairDLG 消息处理程序
