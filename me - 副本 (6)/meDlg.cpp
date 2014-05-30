@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "DES.h"
 #include "AES.h"
+#include "SM3.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -299,11 +300,26 @@ void CmeDlg::OnBnClickedButtonEncryp()
 	int aesendflag=0;
 	char aestext[17];
 	FILE *AesFp;
+	//sm3变量声明区域 
+	FILE *Sm3Fp;
+	char sm3filetemp[200000];
+	int sm3filelength;
 
 
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////一下是RSA解密变量声明区域 。
+	DecrypOptionDlg desRsa(NULL);
 
-	//
+	FILE *RsaFp;
+	char rsafiletemp[20000];
+	int rsafilelength;
+	int rsaendflag=0;
+	unsigned char rsatext[16];
+	int rsa_d = mApp->RSA_d;
+	int rsa_e = mApp->RSA_e;
+	int rsa_n = mApp->RSA_n;
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	memcpy(chDes_Key,mApp->AfxDesKey,9);
 	memcpy(ch3Des_Key,mApp->Afx3DesKey,18);
 	memcpy(AesKey,mApp->AfxAesKey,16);
@@ -316,19 +332,13 @@ void CmeDlg::OnBnClickedButtonEncryp()
 	case 1://00001
 		mydes.filecryption((LPSTR)(LPCSTR)mApp->AfxMingwenPath,chDes_Key,0);
 			SetDlgItemText(IDC_EDIT_MIWEN,mApp->AfxFanwen);
-
 		UpdateData();
 		break;
 	case 2:	 //000010
 		 mydes.file_TriDES_encryption((LPSTR)(LPCSTR)mApp->AfxMingwenPath,ch3Des_Key,0);
 		 SetDlgItemText(IDC_EDIT_MIWEN,mApp->AfxFanwen);
 		break;
-	case 3:
-		AfxMessageBox(__T("选中DES加密算法和3DES算法"));//000011
-		break;
 	case 4:
-		AfxMessageBox(__T("选中AES加密算法"));//0000100
-		//*/
 		AesFp=fopen((LPSTR)(LPCSTR)mApp->AfxMingwenPath,"rb+");//打开明文文件  ，可以调到switch语句前面。
 		aesfilelength=ftell(AesFp);
 		fseek(AesFp,0,SEEK_SET);
@@ -338,13 +348,11 @@ void CmeDlg::OnBnClickedButtonEncryp()
 		fread(aesfiletemp,aesfilelength,1,AesFp);
 		for(;aesendflag+16<=aesfilelength;)
 		{
-
 			aestext[0]=aesfiletemp[aesendflag+0];		aestext[1]=aesfiletemp[aesendflag+1];		aestext[2]=aesfiletemp[aesendflag+2];		aestext[3]=aesfiletemp[aesendflag+3];
 			aestext[4]=aesfiletemp[aesendflag+4];		aestext[5]=aesfiletemp[aesendflag+5];		aestext[6]=aesfiletemp[aesendflag+6];		aestext[7]=aesfiletemp[aesendflag+7];	 
 			aestext[8]=aesfiletemp[aesendflag+8];		aestext[9]=aesfiletemp[aesendflag+9];		aestext[10]=aesfiletemp[aesendflag+10];	aestext[11]=aesfiletemp[aesendflag+11];
 			aestext[12]=aesfiletemp[aesendflag+12];	aestext[13]=aesfiletemp[aesendflag+13];	aestext[14]=aesfiletemp[aesendflag+14];	aestext[15]=aesfiletemp[aesendflag+15];
-				aestext[16]='\0';
-			//AfxMessageBox(aestext);
+			aestext[16]='\0';
 			AES myaes(AesKey);
 			myaes.Cipher(aestext,16);
 			aesfiletemp[aesendflag+0] = aestext[0];	aesfiletemp[aesendflag+1]=aestext[1];		aesfiletemp[aesendflag+2]=aestext[2];		aesfiletemp[aesendflag+3]=aestext[3];
@@ -354,200 +362,79 @@ void CmeDlg::OnBnClickedButtonEncryp()
 			aesendflag+=16;
 		}
 		fclose(AesFp);
-
 		if (miwen_dlg.DoModal() == IDOK)
 		{
 		miwenfileName = miwen_dlg.GetPathName();
 		}
-		
 		pmiwenfile = fopen(miwenfileName,"wb+");
 		fwrite(aesfiletemp,aesfilelength,1,pmiwenfile);
 		fclose(pmiwenfile);
-		//加密完成
-
-		//*/
-
+		SetDlgItemText(IDC_EDIT_MIWEN,aesfiletemp);
 		break;
-	case 5:
-		AfxMessageBox(__T("选中AES和DES加密算法"));/////0000101
+	case 8://SM3
+		Sm3Fp=fopen((LPSTR)(LPCSTR)mApp->AfxMingwenPath,"rb+");//打开密文文件
+		fseek(Sm3Fp,0,SEEK_SET);
+		fseek(Sm3Fp,0,SEEK_END);
+		sm3filelength=ftell(Sm3Fp);
+		rewind(Sm3Fp);
+		fread(sm3filetemp,sm3filelength,1,Sm3Fp);//读取密文的内容到aesfiletemp临时变量中。
+		SM3_Init();
+		for (DWORD i = 0; i<16; i++)
+		{
+			SM3_Update((BYTE *)sm3filetemp, sm3filelength);
+		}
+		SM3_Final(hash);
+		fclose(Sm3Fp);
+	/*	if (miwen_dlg.DoModal() == IDOK)
+		{
+			miwenfileName = miwen_dlg.GetPathName();
+		}*/
+		pmiwenfile = fopen(__T("E:\happy\myFile\me - 副本 (6)\sm3Miwen.txt"),"wb+");
+		fwrite(hash,8,1,pmiwenfile);
+		mApp->Afxhash .Format("%s",hash);
+		fclose(pmiwenfile);
+		SetDlgItemText(IDC_EDIT_MIWEN,mApp->Afxhash);
 		break;
-	case 6:
-		AfxMessageBox(__T("选中AES和3DES加密算法"));/////0000110
-		break;
-	case 7:
-		AfxMessageBox(__T("选中DES和3DES和AES加密算法"));//000000111
-		break;
-	case 8:
-		AfxMessageBox(__T("选中SM5加密算法"));//0001000
-		break;
-	case 9:
-		AfxMessageBox(__T("选中DES和SM5加密算法"));	///0001001
-		break ;
-	case 10:
-		AfxMessageBox(__T("选中3DES和SM5加密算法"));//00001010
-		break;
-	case 11:
-		AfxMessageBox(__T("选中DES和3DES和SM5加密算法"));//000001011
-		break;
-	case 12:
-		AfxMessageBox(__T("选中AES和SM5加密算法"));//000001100
-		break;
-	case 13:
-		AfxMessageBox(__T("选中DES和AES和SM5加密算法"));//000001101
-		break;
-	case 14:
-		AfxMessageBox(__T("选中3DES和AES和SM5加密算法"));//000001110
-		break;
-	case 15:
-		AfxMessageBox(__T("选中ES和3DES和和AES和SM5加密算法"));//1111
-		break;
-	case 16:
-		AfxMessageBox(__T("选中RSA加密算法"));//10000
-		break;
-	case 17:
-		AfxMessageBox(__T("选中DES和RSA加密算法"));//10001
-		break;
-	case 18:
-		AfxMessageBox(__T("选中3DES和RSA加密算法"));//10010
-		break;
-	case 19:
-		AfxMessageBox(__T("选中DES和3DES和RSA加密算法"));//10011
-		break;
-	case 20:
-		AfxMessageBox(__T("选中AES和RSA加密算法"));//10100
-		break;
-	case 21:
-		AfxMessageBox(__T("选中DES和AES和RSA加密算法"));//10101
-		break;
-	case 22:
-		AfxMessageBox(__T("选中3DES和AES和RSA加密算法"));//10110
-		break;
-	case 23:
-		AfxMessageBox(__T("选中DES和3DES和AES和RSA加密算法"));//10111
-		break;
-	case 24:
-		AfxMessageBox(__T("选中SM5和RSA加密算法"));//11000
-		break;
-	case 25:
-		AfxMessageBox(__T("选中DES和SM5和RSA加密算法"));//11001
-		break;
-	case 26:
-		AfxMessageBox(__T("选中3DES和SM5和RSA加密算法"));//11010
-		break;
-	case 27:
-		AfxMessageBox(__T("选中DES和3DES和SM5和RSA加密算法"));//11011
-		break;
-	case 28:
-		AfxMessageBox(__T("选中AES和SM5和RSA加密算法"));//11100
-		break;
-	case 29:
-		AfxMessageBox(__T("选中DES和AES和SM5和RSA加密算法"));//11101
-		break;
-	case 30:
-		AfxMessageBox(__T("选中3DES和AES和SM5和RSA加密算法"));//11110
-		break;
-	case 31:
-		AfxMessageBox(__T("选中DES和3DES和AES和SM5和RSA加密算法"));//11111
-		break;
-	case 32://100000
-		AfxMessageBox(__T("选中MD5算法"));
-		break;
-	case 33://100001
-		AfxMessageBox(__T("选中MD5和DES加密算法"));
-		break;
-	case 34:	 //0100010
-		AfxMessageBox(__T("选中MD5和3DES加密算法"));
-		break;
-	case 35: //100011
-		AfxMessageBox(__T("选中DES加密算法和3DES和MD5算法"));
-		break;
-	case 36:  //100100
-		AfxMessageBox(__T("选中AES和MD5加密算法"));
-		break;
-	case 37: //100101
-		AfxMessageBox(__T("选中AES和DES和MD5加密算法"));
-		break;
-	case 38://100110
-		AfxMessageBox(__T("选中AES和3DES和MD5加密算法"));
-		break;
-	case 39: //100111
-		AfxMessageBox(__T("选中DES和3DES和AES和MD5加密算法"));
-		break;
-	case 40://101000
-		AfxMessageBox(__T("选中SM5和MD5加密算法"));
-		break;
-	case 41://101001
-		AfxMessageBox(__T("选中DES和SM5和MD5加密算法"));	
-		break ;
-	case 42://101010
-		AfxMessageBox(__T("选中3DES和SM5和MD5加密算法"));
-		break;
-	case 43: //101011
-		AfxMessageBox(__T("选中DES和3DES和SM5和MD5加密算法"));
-		break;
-	case 44: //101100
-		AfxMessageBox(__T("选中AES和SM5和MD5加密算法"));
-		break;
-	case 45: //101101
-		AfxMessageBox(__T("选中DES和AES和SM5和MD5加密算法"));
-		break;
-	case 46: //101110
-		AfxMessageBox(__T("选中3DES和AES和SM5和MD5加密算法"));
-		break;
-	case 47: //101111
-		AfxMessageBox(__T("选中DES和3DES和和AES和SM5和MD5加密算法"));
-		break;
-	case 48://110000
-		AfxMessageBox(__T("选中RSA和MD5加密算法"));
-		break;
-	case 49://110001
-		AfxMessageBox(__T("选中DES和RSA和MD5加密算法"));
-		break;
-	case 50:
-		AfxMessageBox(__T("选中3DES和RSA和MD5加密算法"));//10010
-		break;
-	case 51:
-		AfxMessageBox(__T("选中DES和3DES和RSA和MD5加密算法"));//10011
-		break;
-	case 52:
-		AfxMessageBox(__T("选中AES和RSA和MD5加密算法"));//10100
-		break;
-	case 53:
-		AfxMessageBox(__T("选中DES和AES和RSA和MD5加密算法"));//10101
-		break;
-	case 54:
-		AfxMessageBox(__T("选中3DES和AES和RSA和MD5加密算法"));//10110
-		break;
-	case 55:
-		AfxMessageBox(__T("选中DES和3DES和AES和RSA和MD5加密算法"));//10111
-		break;
-	case 56:
-		AfxMessageBox(__T("选中SM5和RSA和MD5加密算法"));//11000
-		break;
-	case 57:
-		AfxMessageBox(__T("选中DES和SM5和RSA和MD5加密算法"));//11001
-		break;
-	case 58:
-		AfxMessageBox(__T("选中3DES和SM5和RSA和MD5加密算法"));//11010
-		break;
-	case 59:
-		AfxMessageBox(__T("选中DES和3DES和SM5和RSA和MD5加密算法"));//11011
-		break;
-	case 60:
-		AfxMessageBox(__T("选中AES和SM5和RSA和MD5加密算法"));//11100
-		break;
-	case 61:
-		AfxMessageBox(__T("选中DES和AES和SM5和RSA和MD5加密算法"));//11101
-		break;
-	case 62:
-		AfxMessageBox(__T("选中3DES和AES和SM5和RSA和MD5加密算法"));//11110
-		break;
-	case 63:
-		AfxMessageBox(__T("选中DES和3DES和AES和SM5和RSA和MD5加密算法"));//11111
+	case 16://AfxMessageBox(__T("选中RSA加密算法"));//10000
+		RsaFp=fopen((LPSTR)(LPCSTR)mApp->AfxMiwenPath,"rb+");//打开密文文件
+		fseek(RsaFp,0,SEEK_SET);
+		fseek(RsaFp,0,SEEK_END);
+		rsafilelength=ftell(RsaFp);	//得到密文的长度
+		rewind(RsaFp);
+		fread(rsafiletemp,rsafilelength,1,RsaFp);//读取密文的内容到aesfiletemp临时变量中。
+		for(;rsaendflag+16<=rsafilelength;)	 //如果结束标志没有达到文件的长度，那说明还没结束。
+		{
+			rsatext[0]=rsafiletemp[rsaendflag+0];		rsatext[1]=rsafiletemp[rsaendflag+1];		rsatext[2]=rsafiletemp[rsaendflag+2];		rsatext[3]=rsafiletemp[rsaendflag+3];
+			rsatext[4]=rsafiletemp[rsaendflag+4];		rsatext[5]=rsafiletemp[rsaendflag+5];		rsatext[6]=rsafiletemp[rsaendflag+6];		rsatext[7]=rsafiletemp[rsaendflag+7];	 
+			rsatext[8]=rsafiletemp[rsaendflag+8];		rsatext[9]=rsafiletemp[rsaendflag+9];		rsatext[10]=rsafiletemp[rsaendflag+10];		rsatext[11]=rsafiletemp[rsaendflag+11];
+			rsatext[12]=rsafiletemp[rsaendflag+12];	    rsatext[13]=rsafiletemp[rsaendflag+13]; 	rsatext[14]=rsafiletemp[rsaendflag+14];		rsatext[15]=rsafiletemp[rsaendflag+15];
+			for (int i = 0; i<=15;i++)
+			{
+				rsatext[i] = desRsa.Modular_Exonentiation(rsatext[i], rsa_e, rsa_n);
+			}
+			rsafiletemp[rsaendflag+0] = rsatext[0];rsafiletemp[rsaendflag+1]=rsatext[1];		rsafiletemp[rsaendflag+2]=rsatext[2];		rsafiletemp[rsaendflag+3]=rsatext[3];
+			rsafiletemp[rsaendflag+4]=rsatext[4];		rsafiletemp[rsaendflag+5]=rsatext[5];		rsafiletemp[rsaendflag+6]=rsatext[6];		rsafiletemp[rsaendflag+7]=rsatext[7];	 
+			rsafiletemp[rsaendflag+8]=rsatext[8];		rsafiletemp[rsaendflag+9]=rsatext[9];		rsafiletemp[rsaendflag+10]=rsatext[10];	rsafiletemp[rsaendflag+11]=rsatext[11];
+			rsafiletemp[rsaendflag+12]=rsatext[12];	rsafiletemp[rsaendflag+13]=rsatext[13];	rsafiletemp[rsaendflag+14]=rsatext[14];	rsafiletemp[rsaendflag+15]=rsatext[15];
+			rsaendflag+=16;
+		}
+		fclose(RsaFp);//关闭密文文件
+		if (miwen_dlg.DoModal() == IDOK)
+		{
+			miwenfileName = miwen_dlg.GetPathName();
+		}
+	/*	else{
+		 AfxMessageBox(__T("出现错误"));
+		 return ;
+		}*/
+		pmiwenfile = fopen(miwenfileName,"wb+");
+		fwrite(rsafiletemp,rsafilelength,1,pmiwenfile);
+		fclose(pmiwenfile);
+		SetDlgItemText(IDC_EDIT_MIWEN,rsafiletemp);
 		break;
 	default:
+		AfxMessageBox(__T("只能选择一种算法算法"));
 		break;
-		
 	}
 	 //显示下拉框
 	int nLine = ((CEdit*)GetDlgItem(IDC_EDIT_MIWEN))->GetLineCount();
@@ -559,12 +446,7 @@ void CmeDlg::OnBnClickedButtonEncryp()
 	{
 		GetDlgItem(IDC_EDIT_MIWEN)->ShowScrollBar(SB_VERT, FALSE);
 	}
-
-
-	//AfxMessageBox(AfxCheckState);
-	// TODO: 在此添加控件通知处理程序代码
 }
-
 void CmeDlg::OnBnClickedButtonChoseCipherFile()
 {
 	strTemp = "";
@@ -578,7 +460,6 @@ void CmeDlg::OnBnClickedButtonChoseCipherFile()
 		myMiwenFile.Open(miwen_dlg.GetPathName(),CFile::modeRead);
 		CmeApp * mApp = (CmeApp*)AfxGetApp( );
 		mApp->AfxMiwenPath = miwen_dlg.GetPathName();
-		//AfxMessageBox(mApp->AfxMingwenPath);
 		while(ret == 1000)
 		{
 			ret = myMiwenFile.Read(buf,sizeof(buf));
@@ -614,6 +495,8 @@ void CmeDlg::OnBnClickedButtonChoseDncrypAlogrithm()
 	// TODO: 在此添加控件通知处理程序代码
 }
 
+
+
 void CmeDlg::OnBnClickedButtonDecryp()
 {
 	//公共变量声明
@@ -641,7 +524,18 @@ void CmeDlg::OnBnClickedButtonDecryp()
 	
 	 ////////////AES解密变量声明结束行 。
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////RSA解密变量声明区域 。
+	FILE *RsaFp;
+	char rsafiletemp[20000];
+	int rsafilelength;
+	int rsaendflag=0;
+	unsigned char rsatext[16];
+	int rsa_d = mApp->RSA_d;
+	int rsa_e = mApp->RSA_e;
+	int rsa_n = mApp->RSA_n;
 
+	////////////RSA解密变量声明结束行 。
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	char chDes_UnKey[9];
 	char ch3Des_UnKey[27];
 	//CString strDesKey = CEncrypOptionDlg::mDesKey;
@@ -650,7 +544,12 @@ void CmeDlg::OnBnClickedButtonDecryp()
 	memcpy(ch3Des_UnKey,mApp->Afx3DesUnKey,mApp->Afx3DesUnKey.GetLength());
 	memcpy(chAes_UnKey,mApp->AfxAesUnKey,mApp->AfxAesUnKey.GetLength());//获得了AESUNKEY的值。
 	AES myaes(chAes_UnKey);
-
+	DecrypOptionDlg desRsa(NULL);
+	//sm3变量声明区域 
+	FILE *Sm3Fp;
+	char sm3filetemp[200000];
+	int sm3filelength;
+	CString CStrhashTemp;
 
 	CDES myundes;
 	switch (mApp->mMiwendlg)
@@ -680,7 +579,6 @@ void CmeDlg::OnBnClickedButtonDecryp()
 		fread(aesfiletemp,aesfilelength,1,AesFp);//读取密文的内容到aesfiletemp临时变量中。
 		for(;aesendflag+16<=aesfilelength;)	 //如果结束标志没有达到文件的长度，那说明还没结束。
 		{
-
 		aestext[0]=aesfiletemp[aesendflag+0];		aestext[1]=aesfiletemp[aesendflag+1];		aestext[2]=aesfiletemp[aesendflag+2];		aestext[3]=aesfiletemp[aesendflag+3];
 		aestext[4]=aesfiletemp[aesendflag+4];		aestext[5]=aesfiletemp[aesendflag+5];		aestext[6]=aesfiletemp[aesendflag+6];		aestext[7]=aesfiletemp[aesendflag+7];	 
 		aestext[8]=aesfiletemp[aesendflag+8];		aestext[9]=aesfiletemp[aesendflag+9];		aestext[10]=aesfiletemp[aesendflag+10];	aestext[11]=aesfiletemp[aesendflag+11];
@@ -702,185 +600,66 @@ void CmeDlg::OnBnClickedButtonDecryp()
 		pmingwenfile = fopen(mingwenfileName,"wb+");
 		fwrite(aesfiletemp,aesfilelength,1,pmingwenfile);
 		fclose(pmingwenfile);
-		//解密完成
-		break;
-
-	case 5:
-		AfxMessageBox(__T("选中AES和DES加密算法"));/////0000101
-		break;
-	case 6:
-		AfxMessageBox(__T("选中AES和3DES加密算法"));/////0000110
-		break;
-	case 7:
-		AfxMessageBox(__T("选中DES和3DES和AES加密算法"));//000000111
 		break;
 	case 8:
-		AfxMessageBox(__T("选中SM5加密算法"));//0001000
-		break;
-	case 9:
-		AfxMessageBox(__T("选中DES和SM5加密算法"));	///0001001
-		break ;
-	case 10:
-		AfxMessageBox(__T("选中3DES和SM5加密算法"));//00001010
-		break;
-	case 11:
-		AfxMessageBox(__T("选中DES和3DES和SM5加密算法"));//000001011
-		break;
-	case 12:
-		AfxMessageBox(__T("选中AES和SM5加密算法"));//000001100
-		break;
-	case 13:
-		AfxMessageBox(__T("选中DES和AES和SM5加密算法"));//000001101
-		break;
-	case 14:
-		AfxMessageBox(__T("选中3DES和AES和SM5加密算法"));//000001110
-		break;
-	case 15:
-		AfxMessageBox(__T("选中ES和3DES和和AES和SM5加密算法"));//1111
+		Sm3Fp=fopen((LPSTR)(LPCSTR)mApp->AfxMiwenPath,"rb+");//打开密文文件
+		fseek(Sm3Fp,0,SEEK_SET);
+		fseek(Sm3Fp,0,SEEK_END);
+		sm3filelength=ftell(Sm3Fp);
+		rewind(Sm3Fp);
+		fread(sm3filetemp,sm3filelength,1,Sm3Fp);//读取密文的内容到aesfiletemp临时变量中。
+		SM3_Init();
+		for (DWORD i = 0; i<16; i++)
+		{
+			SM3_Update((BYTE *)sm3filetemp, sm3filelength);
+		}
+		SM3_Final(hash);
+		fclose(Sm3Fp);
+		CStrhashTemp.Format("%s",hash);
+		if(CStrhashTemp.Compare(mApp->Afxhash)==0)
+		{
+			AfxMessageBox(__T("匹配成功！"));
+		}
+		else
+		{
+			AfxMessageBox(__T("匹配失败"));
+		}
 		break;
 	case 16:
 		AfxMessageBox(__T("选中RSA加密算法"));//10000
-		break;
-	case 17:
-		AfxMessageBox(__T("选中DES和RSA加密算法"));//10001
-		break;
-	case 18:
-		AfxMessageBox(__T("选中3DES和RSA加密算法"));//10010
-		break;
-	case 19:
-		AfxMessageBox(__T("选中DES和3DES和RSA加密算法"));//10011
-		break;
-	case 20:
-		AfxMessageBox(__T("选中AES和RSA加密算法"));//10100
-		break;
-	case 21:
-		AfxMessageBox(__T("选中DES和AES和RSA加密算法"));//10101
-		break;
-	case 22:
-		AfxMessageBox(__T("选中3DES和AES和RSA加密算法"));//10110
-		break;
-	case 23:
-		AfxMessageBox(__T("选中DES和3DES和AES和RSA加密算法"));//10111
-		break;
-	case 24:
-		AfxMessageBox(__T("选中SM5和RSA加密算法"));//11000
-		break;
-	case 25:
-		AfxMessageBox(__T("选中DES和SM5和RSA加密算法"));//11001
-		break;
-	case 26:
-		AfxMessageBox(__T("选中3DES和SM5和RSA加密算法"));//11010
-		break;
-	case 27:
-		AfxMessageBox(__T("选中DES和3DES和SM5和RSA加密算法"));//11011
-		break;
-	case 28:
-		AfxMessageBox(__T("选中AES和SM5和RSA加密算法"));//11100
-		break;
-	case 29:
-		AfxMessageBox(__T("选中DES和AES和SM5和RSA加密算法"));//11101
-		break;
-	case 30:
-		AfxMessageBox(__T("选中3DES和AES和SM5和RSA加密算法"));//11110
-		break;
-	case 31:
-		AfxMessageBox(__T("选中DES和3DES和AES和SM5和RSA加密算法"));//11111
-		break;
-	case 32://100000
-		AfxMessageBox(__T("选中MD5算法"));
-		break;
-	case 33://100001
-		AfxMessageBox(__T("选中MD5和DES加密算法"));
-		break;
-	case 34:	 //0100010
-		AfxMessageBox(__T("选中MD5和3DES加密算法"));
-		break;
-	case 35: //100011
-		AfxMessageBox(__T("选中DES加密算法和3DES和MD5算法"));
-		break;
-	case 36:  //100100
-		AfxMessageBox(__T("选中AES和MD5加密算法"));
-		break;
-	case 37: //100101
-		AfxMessageBox(__T("选中AES和DES和MD5加密算法"));
-		break;
-	case 38://100110
-		AfxMessageBox(__T("选中AES和3DES和MD5加密算法"));
-		break;
-	case 39: //100111
-		AfxMessageBox(__T("选中DES和3DES和AES和MD5加密算法"));
-		break;
-	case 40://101000
-		AfxMessageBox(__T("选中SM5和MD5加密算法"));
-		break;
-	case 41://101001
-		AfxMessageBox(__T("选中DES和SM5和MD5加密算法"));	
-		break ;
-	case 42://101010
-		AfxMessageBox(__T("选中3DES和SM5和MD5加密算法"));
-		break;
-	case 43: //101011
-		AfxMessageBox(__T("选中DES和3DES和SM5和MD5加密算法"));
-		break;
-	case 44: //101100
-		AfxMessageBox(__T("选中AES和SM5和MD5加密算法"));
-		break;
-	case 45: //101101
-		AfxMessageBox(__T("选中DES和AES和SM5和MD5加密算法"));
-		break;
-	case 46: //101110
-		AfxMessageBox(__T("选中3DES和AES和SM5和MD5加密算法"));
-		break;
-	case 47: //101111
-		AfxMessageBox(__T("选中DES和3DES和和AES和SM5和MD5加密算法"));
-		break;
-	case 48://110000
-		AfxMessageBox(__T("选中RSA和MD5加密算法"));
-		break;
-	case 49://110001
-		AfxMessageBox(__T("选中DES和RSA和MD5加密算法"));
-		break;
-	case 50:
-		AfxMessageBox(__T("选中3DES和RSA和MD5加密算法"));//10010
-		break;
-	case 51:
-		AfxMessageBox(__T("选中DES和3DES和RSA和MD5加密算法"));//10011
-		break;
-	case 52:
-		AfxMessageBox(__T("选中AES和RSA和MD5加密算法"));//10100
-		break;
-	case 53:
-		AfxMessageBox(__T("选中DES和AES和RSA和MD5加密算法"));//10101
-		break;
-	case 54:
-		AfxMessageBox(__T("选中3DES和AES和RSA和MD5加密算法"));//10110
-		break;
-	case 55:
-		AfxMessageBox(__T("选中DES和3DES和AES和RSA和MD5加密算法"));//10111
-		break;
-	case 56:
-		AfxMessageBox(__T("选中SM5和RSA和MD5加密算法"));//11000
-		break;
-	case 57:
-		AfxMessageBox(__T("选中DES和SM5和RSA和MD5加密算法"));//11001
-		break;
-	case 58:
-		AfxMessageBox(__T("选中3DES和SM5和RSA和MD5加密算法"));//11010
-		break;
-	case 59:
-		AfxMessageBox(__T("选中DES和3DES和SM5和RSA和MD5加密算法"));//11011
-		break;
-	case 60:
-		AfxMessageBox(__T("选中AES和SM5和RSA和MD5加密算法"));//11100
-		break;
-	case 61:
-		AfxMessageBox(__T("选中DES和AES和SM5和RSA和MD5加密算法"));//11101
-		break;
-	case 62:
-		AfxMessageBox(__T("选中3DES和AES和SM5和RSA和MD5加密算法"));//11110
-		break;
-	case 63:
-		AfxMessageBox(__T("选中DES和3DES和AES和SM5和RSA和MD5加密算法"));//11111
+		RsaFp=fopen((LPSTR)(LPCSTR)mApp->AfxMiwenPath,"rb+");//打开密文文件
+		fseek(RsaFp,0,SEEK_SET);
+		fseek(RsaFp,0,SEEK_END);
+		rsafilelength=ftell(RsaFp);	//得到密文的长度
+		rewind(RsaFp);
+		fread(rsafiletemp,rsafilelength,1,RsaFp);//读取密文的内容到aesfiletemp临时变量中。
+		for(;rsaendflag+16<=rsafilelength;)	 //如果结束标志没有达到文件的长度，那说明还没结束。
+		{
+
+			rsatext[0]=rsafiletemp[rsaendflag+0];		rsatext[1]=rsafiletemp[rsaendflag+1];		rsatext[2]=rsafiletemp[rsaendflag+2];		rsatext[3]=rsafiletemp[rsaendflag+3];
+			rsatext[4]=rsafiletemp[rsaendflag+4];		rsatext[5]=rsafiletemp[rsaendflag+5];		rsatext[6]=rsafiletemp[rsaendflag+6];		rsatext[7]=rsafiletemp[rsaendflag+7];	 
+			rsatext[8]=rsafiletemp[rsaendflag+8];		rsatext[9]=rsafiletemp[rsaendflag+9];		rsatext[10]=rsafiletemp[rsaendflag+10];	rsatext[11]=rsafiletemp[rsaendflag+11];
+			rsatext[12]=rsafiletemp[rsaendflag+12];	rsatext[13]=rsafiletemp[rsaendflag+13];	rsatext[14]=rsafiletemp[rsaendflag+14];	rsatext[15]=rsafiletemp[rsaendflag+15];
+			//myaes.InvCipher(aestext);
+			for (int i = 0; i<=15;i++)
+			{
+			rsatext[i] = desRsa.Modular_Exonentiation(rsatext[i], rsa_d, rsa_n);
+			}
+			rsafiletemp[rsaendflag+0] = rsatext[0];rsafiletemp[rsaendflag+1]=rsatext[1];		rsafiletemp[rsaendflag+2]=rsatext[2];		rsafiletemp[rsaendflag+3]=rsatext[3];
+			rsafiletemp[rsaendflag+4]=rsatext[4];		rsafiletemp[rsaendflag+5]=rsatext[5];		rsafiletemp[rsaendflag+6]=rsatext[6];		rsafiletemp[rsaendflag+7]=rsatext[7];	 
+			rsafiletemp[rsaendflag+8]=rsatext[8];		rsafiletemp[rsaendflag+9]=rsatext[9];		rsafiletemp[rsaendflag+10]=rsatext[10];	rsafiletemp[rsaendflag+11]=rsatext[11];
+			rsafiletemp[rsaendflag+12]=rsatext[12];	rsafiletemp[rsaendflag+13]=rsatext[13];	rsafiletemp[rsaendflag+14]=rsatext[14];	rsafiletemp[rsaendflag+15]=rsatext[15];
+			rsaendflag+=16;
+		}
+		fclose(RsaFp);//关闭密文文件
+
+		if (mingwen_dlg.DoModal() == IDOK)
+		{
+			mingwenfileName = mingwen_dlg.GetPathName();
+		}
+		pmingwenfile = fopen(mingwenfileName,"wb+");
+		fwrite(rsafiletemp,rsafilelength,1,pmingwenfile);
+		fclose(pmingwenfile);
 		break;
 	default:
 		break;

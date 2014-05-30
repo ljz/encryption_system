@@ -21,6 +21,7 @@ public:
 public:
    int mMingwendlg;
    int mMiwendlg;
+   int RSA_d,RSA_n,RSA_e;
    CString AfxMingwenPath ;
    CString AfxMiwenPath;
    CString AfxDesKey;
@@ -30,6 +31,7 @@ public:
    CString AfxAesKey;
    CString Afx_RSA_PK;
    CString Afx_RSA_SK;
+   CString Afxhash;
 
    CString AfxDesUnKey;
    CString AfxFanwen;

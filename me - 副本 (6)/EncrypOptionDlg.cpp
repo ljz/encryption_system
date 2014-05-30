@@ -51,16 +51,16 @@ void CEncrypOptionDlg::OnBnClickedButtonChoseFinish()
 	CButton* pAesCheck = (CButton*)GetDlgItem(IDC_CHECK_AES);
 	int pAesCheckState = pAesCheck->GetCheck();
 	pAesCheckState = pAesCheckState<<2;
-	CButton* pRc5Check = (CButton*)GetDlgItem(IDC_CHECK_RC5);
-	int pRc5CheckState = pRc5Check->GetCheck();
-	pRc5CheckState = pRc5CheckState<<3;
+	CButton* pSM3Check = (CButton*)GetDlgItem(IDC_CHECK_SM3);
+	int pSM3CheckState = pSM3Check->GetCheck();
+	pSM3CheckState = pSM3CheckState<<3;
 	CButton* pRsaCheck = (CButton*)GetDlgItem(IDC_CHECK_RSA);
 	int pRsaCheckState = pRsaCheck->GetCheck();
 	pRsaCheckState = pRsaCheckState<<4;
-	CButton* pMd5Check = (CButton*)GetDlgItem(IDC_CHECK_MD5);
+	/*CButton* pMd5Check = (CButton*)GetDlgItem(IDC_CHECK_MD5);
 	int pMd5CheckState = pMd5Check->GetCheck();
-	pMd5CheckState = pMd5CheckState<<5;
-	CheckState = pDesCheckState + p3DesCheckState + pAesCheckState + pRc5CheckState + pRsaCheckState + pMd5CheckState ;    
+	pMd5CheckState = pMd5CheckState<<5;*/
+	CheckState = pDesCheckState + p3DesCheckState + pAesCheckState + pSM3CheckState + pRsaCheckState;// + pMd5CheckState ;    
 	CmeApp * mApp = (CmeApp*)AfxGetApp( );
 	UpdateData(true);//将edit中的内容传给变量
 	mApp->mMingwendlg = CheckState;

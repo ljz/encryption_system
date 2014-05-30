@@ -22,8 +22,8 @@
 #define IDC_EDIT_MIWEN                  1007
 #define IDC_CHECK_AES                   1007
 #define IDC_CHECK_RSA                   1008
-#define IDC_CHECK_MD5                   1009
-#define IDC_CHECK_RC5                   1011
+//#define IDC_CHECK_MD5                   1009
+#define IDC_CHECK_SM3                   1011
 #define IDC_EDIT_3DES_KEY               1012
 #define IDC_EDIT_AES_KEY                1013
 #define IDC_BUTTON_CREATE_KEYS          1014
@@ -35,8 +35,10 @@
 #define IDC_EDIT_UNDES_KEY              1021
 #define IDC_EDIT_AES_UNKEY              1022
 #define IDC_PublicKey                   1023
-#define IDC_EDIT2                       1024
 #define IDC_PrivateKey                  1024
+#define IDC_RSA_E                       1026
+//#define IDC_CHECK_SM3                   1027
+#define IDC_RSA_E2                      1028
 
 // Next default values for new objects
 // 
@@ -44,7 +46,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1026
+#define _APS_NEXT_CONTROL_VALUE         1028
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

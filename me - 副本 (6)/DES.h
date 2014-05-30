@@ -353,7 +353,6 @@ void CDES::cryption(unsigned int text[2],unsigned int key[16][2],int flag)
 		}
 
 	}
-
 	temp=text[1];
 	text[1]=text[0];
 	text[0]=temp;
@@ -383,34 +382,21 @@ void CDES::inttoch(_int64 temp,char ch[4])
  //DES加密函数
 int CDES::filecryption(char *fname,char ch[9],int crypflag)
 {
-	//AfxMessageBox(__T("开始DES加密算法"));
 	FILE *fp;
-
-
 	char ckey1[4]={'\0','\0','\0','\0'},ckey2[4]={'\0','\0','\0','\0'};
 	unsigned keyn[2];
 	unsigned skeyn[16][2];
 	char text1[4],text2[4];
 	unsigned int textn[2];
-
-
-
-
-
-
 	ckey1[0]=ch[0];     ckey1[1]=ch[1];     ckey1[2]=ch[2];		ckey1[3]=ch[3];
 	ckey2[0]=ch[4];		ckey2[1]=ch[5];		ckey2[2]=ch[6];		ckey2[3]=ch[7];
 	keyn[0]=chtoint(ckey1);
 	keyn[1]=chtoint(ckey2);
 	Ckey(keyn,skeyn);
-
-
-
 	fp=fopen(fname,"rb+");
 	if(fp==NULL)
 	{
 		return 2;
-
 	}
 	int ftel=fseek(fp,0,2);
 	ftel=ftell(fp);
@@ -420,7 +406,6 @@ int CDES::filecryption(char *fname,char ch[9],int crypflag)
 	{
 		fputc(' ',fp);
 	}
-
 	char filetemp[20000];
 	int filelength=ftell(fp);
 	rewind(fp);
@@ -428,30 +413,18 @@ int CDES::filecryption(char *fname,char ch[9],int crypflag)
 	int endflag=0;
 	for(;endflag+8<=filelength;)
 	{
-
 		text1[0]=filetemp[endflag+0];		text1[1]=filetemp[endflag+1];		text1[2]=filetemp[endflag+2];		text1[3]=filetemp[endflag+3];
 		text2[0]=filetemp[endflag+4];		text2[1]=filetemp[endflag+5];		text2[2]=filetemp[endflag+6];		text2[3]=filetemp[endflag+7];
-
 		textn[0]=chtoint(text1);
 		textn[1]=chtoint(text2);
 		cryption(textn,skeyn,crypflag);
 		inttoch(textn[0],text1);
 		inttoch(textn[1],text2);
-
 		filetemp[endflag+0]=text1[0];		filetemp[endflag+1]=text1[1];		filetemp[endflag+2]=text1[2];		filetemp[endflag+3]=text1[3];
 		filetemp[endflag+4]=text2[0];		filetemp[endflag+5]=text2[1];       filetemp[endflag+6]=text2[2];		filetemp[endflag+7]=text2[3];
 		endflag+=8;
 	}
-	//rewind(fp);
-	//fwrite(filetemp,filelength,1,fp);   //重新存储为原文件
 	fclose(fp);
-
-	//rewind(fp);
-	//CmeApp * msApp = (CmeApp*)AfxGetApp( );
-	//AfxMessageBox("msApp->AfxMiwenPath");
-	//AfxMessageBox(msApp->AfxMiwenPath);
-
-
 	CFileDialog miwen_dlg(FALSE);
 	CString miwenfileName;
 	if (miwen_dlg.DoModal() == IDOK)
@@ -460,32 +433,16 @@ int CDES::filecryption(char *fname,char ch[9],int crypflag)
 	}
 	FILE * pmiwenfile;
 	pmiwenfile = fopen(miwenfileName,"wb+");
-	//AfxMessageBox(pmiwenfile);
-	//rewind(pmiwenfile);
 	fwrite(filetemp,filelength,1,pmiwenfile);//pmiwenfile);
 	CmeApp * mApp = (CmeApp*)AfxGetApp( );
 	mApp->AfxFanwen = filetemp;
-
-//	GetDlgItem(IDC_EDIT_MIWEN)->SetDlgItemText((CString)filetemp);
-	//SetDlgItemText(IDC_EDIT_MIWEN,(CString)filetemp);
-	//extern CString	m_edit_miwen;
-	//CmeApp * mApp = (CmeApp*)AfxGetApp( );
-	//mApp->AfxFanwen=filetemp;
-	//AfxMessageBox(mApp->AfxFanwen);
-	//UpdateData(FALSE);
 	fclose(pmiwenfile);
 	
 	return 1;
 };
-
-
-
-
 //3DES加密解密函数
-
 int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 {
-	//*/
 	AfxMessageBox(__T("进入3DES函数"));
 	char   ch_low[9];
 	char   ch_mid[9];
@@ -505,10 +462,8 @@ int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 			ch_high[i-18] = ch[i];
 		}
 	}
-	//AfxMessageBox(__T("开始DES加密算法"));
 	FILE *fp;
-
-	//地位
+	//低位
 	char ckey1_low[4]={'\0','\0','\0','\0'},ckey2_low[4]={'\0','\0','\0','\0'};
 	unsigned keyn_low[2];
 	unsigned skeyn_low[16][2];
@@ -522,12 +477,7 @@ int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 	char ckey1_high[4]={'\0','\0','\0','\0'},ckey2_high[4]={'\0','\0','\0','\0'};
 	unsigned keyn_high[2];
 	unsigned skeyn_high[16][2];
-	
-
-
-
-
-	 //低位
+	//低位
 	ckey1_low[0]=ch_low[0];     ckey1_low[1]=ch_low[1];     ckey1_low[2]=ch_low[2];		ckey1_low[3]=ch_low[3];
 	ckey2_low[0]=ch_low[4];		ckey2_low[1]=ch_low[5];		ckey2_low[2]=ch_low[6];		ckey2_low[3]=ch_low[7];
 	keyn_low[0]=chtoint(ckey1_low);
@@ -545,24 +495,18 @@ int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 	keyn_high[0]=chtoint(ckey1_high);
 	keyn_high[1]=chtoint(ckey2_high);
 	Ckey(keyn_high,skeyn_high);
-
-
-
 	fp=fopen(fname,"rb+");
 	if(fp==NULL)
 	{
 		return 2;
-
 	}
 	int ftel=fseek(fp,0,2);
 	ftel=ftell(fp);
-
 	ftel=ftel%8;
 	for(int j=ftel;0<j&&j<=7;j++)
 	{
 		fputc(' ',fp);
 	}
-
 	char filetemp[20000];
 	int filelength=ftell(fp);
 	rewind(fp);
@@ -570,10 +514,8 @@ int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 	int endflag=0;
 	for(;endflag+8<=filelength;)
 	{
-
 		text1[0]=filetemp[endflag+0];		text1[1]=filetemp[endflag+1];		text1[2]=filetemp[endflag+2];		text1[3]=filetemp[endflag+3];
 		text2[0]=filetemp[endflag+4];		text2[1]=filetemp[endflag+5];		text2[2]=filetemp[endflag+6];		text2[3]=filetemp[endflag+7];
-
 		textn[0]=chtoint(text1);
 		textn[1]=chtoint(text2);
 		if (crypflag == 1)
@@ -591,21 +533,11 @@ int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 		
 		inttoch(textn[0],text1);
 		inttoch(textn[1],text2);
-
 		filetemp[endflag+0]=text1[0];		filetemp[endflag+1]=text1[1];		filetemp[endflag+2]=text1[2];		filetemp[endflag+3]=text1[3];
 		filetemp[endflag+4]=text2[0];		filetemp[endflag+5]=text2[1];       filetemp[endflag+6]=text2[2];		filetemp[endflag+7]=text2[3];
 		endflag+=8;
 	}
-	//rewind(fp);
-	//fwrite(filetemp,filelength,1,fp);   //重新存储为原文件
 	fclose(fp);
-
-	//rewind(fp);
-	//CmeApp * msApp = (CmeApp*)AfxGetApp( );
-	//AfxMessageBox("msApp->AfxMiwenPath");
-	//AfxMessageBox(msApp->AfxMiwenPath);
-
-
 	CFileDialog miwen_dlg(FALSE);
 	CString miwenfileName;
 	if (miwen_dlg.DoModal() == IDOK)
@@ -614,21 +546,10 @@ int CDES::file_TriDES_encryption(char *fname,char ch[27],int crypflag)
 	}
 	FILE * pmiwenfile;
 	pmiwenfile = fopen(miwenfileName,"wb+");
-	//AfxMessageBox(pmiwenfile);
-	//rewind(pmiwenfile);
 	fwrite(filetemp,filelength,1,pmiwenfile);//pmiwenfile);
 	CmeApp * mApp = (CmeApp*)AfxGetApp( );
 	mApp->AfxFanwen = filetemp;
-
-	//	GetDlgItem(IDC_EDIT_MIWEN)->SetDlgItemText((CString)filetemp);
-	//SetDlgItemText(IDC_EDIT_MIWEN,(CString)filetemp);
-	//extern CString	m_edit_miwen;
-	//CmeApp * mApp = (CmeApp*)AfxGetApp( );
-	//mApp->AfxFanwen=filetemp;
-	//AfxMessageBox(mApp->AfxFanwen);
-	//UpdateData(FALSE);
 	fclose(pmiwenfile);
-	  //*/
 	return 1;
 };
 

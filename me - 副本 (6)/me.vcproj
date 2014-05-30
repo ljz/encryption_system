@@ -198,6 +198,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MD5.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\me.cpp"
 				>
 			</File>
@@ -207,6 +211,10 @@
 			</File>
 			<File
 				RelativePath=".\RSAKeyPairDLG.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SM3.cpp"
 				>
 			</File>
 			<File
@@ -252,6 +260,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MD5.h"
+				>
+			</File>
+			<File
 				RelativePath=".\me.h"
 				>
 			</File>
@@ -265,6 +277,10 @@
 			</File>
 			<File
 				RelativePath=".\RSAKeyPairDLG.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SM3.h"
 				>
 			</File>
 			<File
